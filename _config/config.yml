@@ -1,0 +1,32 @@
+---
+Name: household-budget-config
+---
+Clesson\Silverstripe\HouseholdBudget\Admins\HouseholdBudgetDashboardAdmin:
+  extra_requirements_css:
+    - clesson-de/silverstripe-household-budget:client/admin/dist/bundle.css
+  extra_requirements_javascript:
+    - clesson-de/silverstripe-household-budget:client/admin/dist/account-chart.js
+    - clesson-de/silverstripe-household-budget:client/admin/dist/monthly-details.js
+    - clesson-de/silverstripe-household-budget:client/admin/dist/report-download.js
+
+Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastService:
+  threshold_percent: 10
+
+Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastDispatchService:
+  claim_lease_minutes: 15
+
+Clesson\Silverstripe\HouseholdBudget\Tasks\MonthlyBudgetForecastTask:
+  cli_user_email: null
+
+SilverStripe\Core\Injector\Injector:
+  Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastService:
+    constructor:
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetReportService'
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastInsightCalculator'
+  Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastDispatchService:
+    constructor:
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastDeliveryRepository'
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastService'
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetForecastEmailService'
+      - '%$Clesson\Silverstripe\HouseholdBudget\Services\BudgetReportService'
+      - '%$Psr\Log\LoggerInterface'

@@ -1,0 +1,39 @@
+{
+    "name": "clesson-de/silverstripe-household-budget",
+    "description": "Track household income and recurring expenses in Silverstripe.",
+    "type": "silverstripe-vendormodule",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "silverstripe",
+        "household budget",
+        "income",
+        "expenses"
+    ],
+    "authors": [
+        {
+            "name": "Kai Feldmaier",
+            "email": "kai.feldmaier@clesson.de",
+            "homepage": "https://clesson.de"
+        }
+    ],
+    "require": {
+        "silverstripe/framework": "^6",
+        "silverstripe/admin": "^3",
+        "clesson-de/silverstripe-contacts": "^1",
+        "clesson-de/silverstripe-payment-accounts": "^1",
+        "clesson-de/silverstripe-dashboard": "^1",
+        "clesson-de/silverstripe-graphing": "^1",
+        "clesson-de/silverstripe-hints": "^1",
+        "tecnickcom/tcpdf": "^6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Clesson\\Silverstripe\\HouseholdBudget\\": "src/"
+        }
+    },
+    "extra": {
+        "expose": ["client/admin/dist"]
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
+}

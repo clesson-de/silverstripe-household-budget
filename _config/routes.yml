@@ -1,0 +1,7 @@
+---
+Name: household-budget-routes
+---
+SilverStripe\Control\Director:
+  rules:
+    'household-budget-api//$Action': 'Clesson\Silverstripe\HouseholdBudget\Controllers\MonthlyBudgetController'
+    'household-budget-report//$Action': 'Clesson\Silverstripe\HouseholdBudget\Controllers\HouseholdBudgetReportController'

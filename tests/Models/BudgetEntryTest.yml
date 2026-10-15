@@ -1,0 +1,40 @@
+SilverStripe\Security\Member:
+  owner:
+    FirstName: Owner
+  other:
+    FirstName: Other
+  unlinked:
+    FirstName: Unlinked
+
+Clesson\Silverstripe\Contacts\Models\Person:
+  owner:
+    FirstName: Owner
+    Account: =>SilverStripe\Security\Member.owner
+  other:
+    FirstName: Other
+    Account: =>SilverStripe\Security\Member.other
+
+Clesson\Silverstripe\PaymentAccount\Models\BankAccount:
+  first:
+    Name: First bank
+    Holder: Owner
+    BIC: COBADEFFXXX
+    IBAN: DE89370400440532013000
+    Contact: =>Clesson\Silverstripe\Contacts\Models\Person.owner
+  second:
+    Name: Second bank
+    Holder: Owner
+    BIC: COBADEFFXXX
+    IBAN: DE89370400440532013000
+    Contact: =>Clesson\Silverstripe\Contacts\Models\Person.owner
+  other:
+    Name: Other bank
+    Holder: Other
+    BIC: COBADEFFXXX
+    IBAN: DE89370400440532013000
+    Contact: =>Clesson\Silverstripe\Contacts\Models\Person.other
+  unassigned:
+    Name: Unassigned bank
+    Holder: Unassigned
+    BIC: COBADEFFXXX
+    IBAN: DE89370400440532013000
