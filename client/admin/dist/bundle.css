@@ -5,6 +5,28 @@
     margin-bottom: 1rem;
 }
 
+.cms-container .household-budget-details__selectors select {
+    appearance: none;
+    display: block;
+    width: 100%;
+    padding: 0.5385rem 2.3076rem 0.5385rem 0.7692rem;
+    font: inherit;
+    line-height: 1.5384;
+    color: #566b8d;
+    border: 1px solid #ced5e1;
+    border-radius: 0.23rem;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2343536d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7692rem center;
+    background-size: 16px 12px;
+}
+
+.cms-container .household-budget-details__selectors select:focus {
+    border-color: #66afe9;
+    outline: 0;
+}
+
 .cms-container .household-budget-details__table {
     width: 100%;
     table-layout: fixed;
@@ -21,6 +43,26 @@
 
 .cms-container .household-budget-details__amount {
     text-align: right;
+}
+
+.cms-container .household-budget-details__months {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.cms-container span.household-budget-details__month {
+    display: inline-block;
+    padding: 0.2em 0.5em;
+    border-radius: 0.25rem;
+    background: #D8E4EB;
+    color: #fff;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.cms-container span.household-budget-details__month--current {
+    background: #025389;
 }
 
 .cms-container .household-budget-details__balance {
@@ -102,6 +144,17 @@
     margin-bottom: 1rem;
 }
 
+.cms-container .household-budget-chart__accounts > label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.cms-container .household-budget-chart__accounts .chosen-container {
+    max-width: 100%;
+}
+
 .cms-container .household-budget-months[role="listbox"] {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -134,11 +187,29 @@
     margin: 1rem 0;
 }
 
-.cms-container .household-budget-report__dates label,
-.cms-container .household-budget-report__accounts label {
+.cms-container .household-budget-report__dates label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.cms-container .household-budget-report__dates input[type="month"] {
+    display: block;
+    width: 100%;
+    padding: 0.5385rem 0.7692rem;
+    font: inherit;
+    line-height: 1.5384;
+    color: #566b8d;
+    background-color: #fff;
+    border: 1px solid #ced5e1;
+    border-radius: 0.23rem;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+    appearance: none;
+}
+
+.cms-container .household-budget-report__dates input[type="month"]:focus {
+    border-color: #66afe9;
+    outline: 0;
 }
 
 .cms-container .household-budget-report__error {

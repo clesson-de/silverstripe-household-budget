@@ -26,10 +26,10 @@
             if (type) {
                 url.searchParams.set('type', type.dataset.type);
             }
-            var accounts = Array.from(panel.querySelectorAll('.household-budget-details__account[aria-pressed="true"]'));
+            var accounts = Array.from(panel.querySelector('.household-budget-account-select').selectedOptions);
             if (accounts.length) {
                 url.searchParams.set('accounts', accounts.map(function (button) {
-                    return button.dataset.accountId;
+                    return button.value;
                 }).join(','));
             }
             var response = await fetch(url, { credentials: 'same-origin', signal: request.signal });
@@ -78,20 +78,14 @@
             }
         });
 
-        $('.household-budget-details__account').entwine({
-            onclick: function () {
+        $('.household-budget-details .household-budget-account-select').entwine({
+            onchange: function () {
                 var panel = this.closest('.household-budget-details');
-                this.attr('aria-pressed', this.attr('aria-pressed') === 'true' ? 'false' : 'true');
-                var buttons = panel.find('.household-budget-details__account');
-                if (!buttons.filter('[aria-pressed="true"]').length) {
-                    buttons.attr('aria-pressed', 'true');
+                if (!this.val() || !this.val().length) {
+                    this.find('option').prop('selected', true);
+                    this.trigger('chosen:updated');
                 }
-                buttons.each(function () {
-                    var selected = this.getAttribute('aria-pressed') === 'true';
-                    $(this).toggleClass('btn-primary', selected).toggleClass('btn-outline-primary', !selected);
-                });
                 reload(panel[0]);
-                return false;
             }
         });
     });

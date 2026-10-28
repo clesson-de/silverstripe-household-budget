@@ -27,10 +27,22 @@ historical versions.
 | Administration → Settings | Personal forecast email opt-in, separate account/overall choices and read-only delivery status. |
 
 Year selectors include the current and **next year**, plus five previous years
-by default. Month selectors default to the current month. Account toggles start
-with all own accounts selected; deselecting the last account selects all again.
+by default. Month selectors default to the current month. Searchable account
+multiselects in monthly details and dashboard panels display selected accounts
+as removable pills. All own accounts start selected; removing the last selection
+selects all again.
+Report / PDF uses the same searchable pill-style account multiselect, with all
+own accounts selected initially. An empty selection prevents PDF export and
+shows the existing account-selection error.
 Existing saved dashboards can add new panels through the panel selector;
 new layouts include the available panels by default.
+
+Monthly details show each rule's configured recurrence months as three-letter
+badges between bank account and amount, without a column heading. Badges use
+white text on `#D8E4EB`; the current calendar month uses `#025389`, independently
+of the month selected in the view.
+Booking amounts are prefixed with `+` for income, `+/-` for transfers and `-`
+for expenses; stored amounts and calculated totals remain unchanged.
 
 The monthly comparison chart has separate bars for income, fixed expenses,
 variable expenses, transfers and balance. Periodic and exceptional expenses

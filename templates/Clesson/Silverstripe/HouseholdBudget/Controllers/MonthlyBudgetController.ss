@@ -9,7 +9,7 @@
         </select>
     </label>
     <p class="household-budget-summary__error alert alert-danger" role="alert" hidden></p>
-    <% include Clesson\Silverstripe\HouseholdBudget\Includes\AccountButtons %>
+    <% include Clesson\Silverstripe\HouseholdBudget\Includes\AccountSelect ChartMode=1 %>
     <table class="table">
         <thead>
             <tr>

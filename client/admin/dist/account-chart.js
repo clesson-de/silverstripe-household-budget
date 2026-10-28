@@ -2,12 +2,7 @@
     'use strict';
 
     function updatePanel(panel) {
-        var buttons = panel.find('.household-budget-chart__account');
-        buttons.each(function () {
-            var selected = $(this).attr('aria-pressed') === 'true';
-            $(this).toggleClass('btn-primary', selected).toggleClass('btn-outline-primary', !selected);
-        });
-        var selectedData = buttons.filter('[aria-pressed="true"]').map(function () {
+        var selectedData = panel.find('.household-budget-account-select option:selected').map(function () {
             return JSON.parse(this.dataset.chartData);
         }).get();
         if (!selectedData.length) {
@@ -44,19 +39,14 @@
     }
 
     $.entwine('ss', function ($) {
-        $('.household-budget-chart__account').entwine({
-            onclick: function (event) {
-                event.preventDefault();
-                event.stopPropagation();
+        $('.household-budget-account-panel .household-budget-account-select').entwine({
+            onchange: function () {
                 var panel = this.closest('.household-budget-account-panel');
-                var buttons = panel.find('.household-budget-chart__account');
-                var active = this.attr('aria-pressed') !== 'true';
-                this.attr('aria-pressed', String(active));
-                if (!buttons.filter('[aria-pressed="true"]').length) {
-                    buttons.attr('aria-pressed', 'true');
+                if (!this.val() || !this.val().length) {
+                    this.find('option').prop('selected', true);
+                    this.trigger('chosen:updated');
                 }
                 updatePanel(panel);
-                return false;
             }
         });
 
@@ -64,8 +54,8 @@
             onchange: async function () {
                 var select = this[0];
                 var panel = this.closest('.household-budget-summary');
-                var activeIDs = panel.find('.household-budget-chart__account[aria-pressed="true"]').map(function () {
-                    return this.dataset.accountId;
+                var activeIDs = panel.find('.household-budget-account-select option:selected').map(function () {
+                    return this.value;
                 }).get();
                 var error = panel.find('.household-budget-summary__error')[0];
                 error.hidden = true;
@@ -83,15 +73,15 @@
                     if (!replacement) {
                         throw new Error('Year summary response has no panel.');
                     }
-                    var buttons = replacement.querySelectorAll('.household-budget-chart__account');
+                    var buttons = replacement.querySelectorAll('.household-budget-account-select option');
                     var selected = Array.from(buttons).filter(function (button) {
-                        return activeIDs.includes(button.dataset.accountId);
+                        return activeIDs.includes(button.value);
                     });
                     buttons.forEach(function (button) {
-                        button.setAttribute('aria-pressed', 'false');
+                        button.selected = false;
                     });
                     (selected.length ? selected : Array.from(buttons)).forEach(function (button) {
-                        button.setAttribute('aria-pressed', 'true');
+                        button.selected = true;
                     });
                     updatePanel($(replacement));
                     panel.replaceWith(replacement);

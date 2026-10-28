@@ -12,19 +12,23 @@
         <div class="household-budget-report__dates">
             <label>
                 <span>$StartMonthLabel.XML</span>
-                <input class="no-change-track" type="month" name="startMonth" value="$CurrentYear.XML-01" required />
+                <input class="form-control no-change-track" type="month" name="startMonth" value="$CurrentYear.XML-01" required />
             </label>
             <label>
                 <span>$EndMonthLabel.XML</span>
-                <input class="no-change-track" type="month" name="endMonth" value="$CurrentYear.XML-12" required />
+                <input class="form-control no-change-track" type="month" name="endMonth" value="$CurrentYear.XML-12" required />
             </label>
         </div>
-        <fieldset class="household-budget-report__accounts">
-            <legend>$AccountsLabel.XML</legend>
-            <% loop $Accounts %>
-                <label><input class="no-change-track" type="checkbox" name="accountID" value="$ID.XML" checked /> $Title.XML</label>
-            <% end_loop %>
-        </fieldset>
+        <div class="household-budget-report__accounts household-budget-chart__accounts field">
+            <label>
+                $AccountsLabel.XML
+                <select multiple class="household-budget-report__account-select no-change-track" name="accountIDs[]" aria-label="$AccountsLabel.XML">
+                    <% loop $Accounts %>
+                        <option value="$ID.XML" selected="selected">$Title.XML</option>
+                    <% end_loop %>
+                </select>
+            </label>
+        </div>
         <button class="btn btn-primary household-budget-report__download" type="button">$SubmitLabel.XML</button>
         <p class="household-budget-report__status" role="status" aria-live="polite" hidden></p>
         <p class="household-budget-report__error" role="alert" hidden></p>

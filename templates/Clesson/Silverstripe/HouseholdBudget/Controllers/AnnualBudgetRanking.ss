@@ -14,11 +14,7 @@
             <button type="button" class="btn <% if $Selected %>btn-primary<% else %>btn-outline-primary<% end_if %> household-budget-ranking__type no-change-track" aria-pressed="<% if $Selected %>true<% else %>false<% end_if %>" data-type="$Value.ATT">$Title</button>
         <% end_loop %>
     </div>
-    <div class="household-budget-chart__accounts" role="group" aria-label="<%t Clesson\Silverstripe\HouseholdBudget\Controllers\MonthlyBudgetController.ACCOUNTS 'Bank accounts' %>">
-        <% loop $Accounts %>
-            <button type="button" class="btn <% if $Selected %>btn-primary<% else %>btn-outline-primary<% end_if %> household-budget-details__account no-change-track" aria-pressed="<% if $Selected %>true<% else %>false<% end_if %>" data-account-id="$AccountID">$Title</button>
-        <% end_loop %>
-    </div>
+    <% include Clesson\Silverstripe\HouseholdBudget\Includes\AccountSelect %>
     <p class="household-budget-details__status" role="status" hidden><%t Clesson\Silverstripe\HouseholdBudget\Controllers\MonthlyBudgetController.LOADING 'Loading...' %></p>
     <p class="household-budget-details__error alert alert-danger" role="alert" hidden></p>
     <% if $HasPositions %>

@@ -16,7 +16,7 @@
     async function download(panel, button) {
         var startMonth = panel.querySelector('[name="startMonth"]').value;
         var endMonth = panel.querySelector('[name="endMonth"]').value;
-        var accounts = Array.from(panel.querySelectorAll('[name="accountID"]:checked'));
+        var accounts = Array.from(panel.querySelector('.household-budget-report__account-select').selectedOptions);
         var error = panel.querySelector('.household-budget-report__error');
         var status = panel.querySelector('.household-budget-report__status');
         if (accounts.length === 0) {

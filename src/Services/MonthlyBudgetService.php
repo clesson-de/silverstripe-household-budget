@@ -143,8 +143,36 @@ class MonthlyBudgetService
             'Description' => $entry->Description,
             'Counterparty' => $entry->Contact()->exists() ? $entry->Contact()->getTitle() : '',
             'Account' => $entry->Account()->Summary,
-            'Amount' => BudgetMoney::formatCents(BudgetMoney::toCents((string)$entry->Amount)),
+            'Months' => $this->monthBadges($entry),
+            'Amount' => $this->detailAmount($entry),
         ]), $entries->toArray()));
+    }
+
+    /** Adds the booking direction without changing stored amounts or calculated totals. */
+    private function detailAmount(BudgetEntry $entry): string
+    {
+        $prefix = match ($entry->Type) {
+            BudgetEntryType::INCOME => '+',
+            BudgetEntryType::TRANSFER => '+/-',
+            default => '-',
+        };
+        return $prefix . BudgetMoney::formatCents(BudgetMoney::toCents((string)$entry->Amount));
+    }
+
+    /** Lists configured recurrence months chronologically, highlighting the current calendar month. */
+    private function monthBadges(BudgetEntry $entry): ArrayList
+    {
+        $selected = explode(',', (string)$entry->getField(BudgetEntryField::MONTHS));
+        $months = new ArrayList();
+        foreach (BudgetMonth::options() as $number => $label) {
+            if (in_array((string)$number, $selected, true)) {
+                $months->push(new ArrayData([
+                    'Label' => mb_substr($label, 0, 3),
+                    'IsCurrent' => (string)$number === date('m'),
+                ]));
+            }
+        }
+        return $months;
     }
 
     /**

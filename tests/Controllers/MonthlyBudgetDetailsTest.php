@@ -8,6 +8,10 @@ use Clesson\Silverstripe\Contacts\Models\Person;
 use Clesson\Silverstripe\HouseholdBudget\Controllers\MonthlyBudgetController;
 use Clesson\Silverstripe\HouseholdBudget\Models\BudgetEntry;
 use Clesson\Silverstripe\HouseholdBudget\Services\MonthlyBudgetService;
+use Clesson\Silverstripe\HouseholdBudget\Constants\BudgetMonth;
+use Clesson\Silverstripe\HouseholdBudget\Constants\BudgetEntryType;
+use DOMDocument;
+use DOMXPath;
 use Clesson\Silverstripe\PaymentAccount\Models\BankAccount;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse_Exception;
@@ -49,6 +53,34 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         return $controller->details()->forTemplate();
     }
 
+    /** Shows all recurrence months in a blank-headed column and highlights only today's month. */
+    public function testRecurrenceMonthBadges(): void
+    {
+        foreach (['income', 'fixed', 'transfer'] as $type) {
+            $entry = $this->booking($type, '10.00', $type);
+            $entry->Months = implode(',', array_keys(BudgetMonth::options()));
+            $entry->write();
+        }
+        $selectedMonth = date('m') === '01' ? '02' : '01';
+        $html = $this->render(['month' => $selectedMonth]);
+        $document = new DOMDocument();
+        $document->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new DOMXPath($document);
+        $this->assertSame(3, $xpath->query('//thead/tr/th[3][normalize-space(.)=""]')->length);
+        $this->assertSame(3, $xpath->query('//tfoot/tr/th[@colspan="3"]')->length);
+        $groups = $xpath->query('//tbody/tr/td[3]/div[@class="household-budget-details__months"]');
+        $this->assertSame(3, $groups->length);
+        foreach ($groups as $group) {
+            $this->assertSame(array_map(fn (string $label): string => mb_substr($label, 0, 3), array_values(BudgetMonth::options())), array_map(
+                fn ($badge): string => $badge->textContent,
+                iterator_to_array($xpath->query('span', $group))
+            ));
+            $active = $xpath->query('span[contains(@class, "--current")]', $group);
+            $this->assertSame(1, $active->length);
+            $this->assertSame(mb_substr(BudgetMonth::label(date('m')), 0, 3), $active->item(0)->textContent);
+        }
+    }
+
     /** Shows sorted groups, precise totals and smaller escaped counterparty text. */
     public function testGroupsAndTotals(): void
     {
@@ -87,9 +119,11 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         $this->assertStringContainsString('Included', $html);
         $this->assertStringNotContainsString('Excluded', $html);
         $this->assertStringContainsString('household-budget-details__balance--positive', $html);
-        $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
+        $this->assertSame(1, substr_count($html, 'selected="selected" data-account-id='));
         $this->assertStringContainsString('value="' . date('m') . '" selected="selected"', $html);
         $this->assertStringContainsString('value="' . date('Y') . '" selected="selected"', $html);
+        $this->assertStringContainsString('household-budget-details__year no-change-track form-select', $html);
+        $this->assertStringContainsString('household-budget-details__month no-change-track form-select', $html);
     }
 
     /** Keeps empty sections visible with a green zero balance. */
@@ -98,6 +132,7 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         Security::setCurrentUser($this->objFromFixture(Member::class, 'unlinked'));
         $html = $this->render();
         $this->assertSame(2, substr_count($html, 'No bookings for this selection.'));
+        $this->assertSame(2, substr_count($html, 'colspan="4"'));
         $this->assertStringContainsString('household-budget-details__balance--positive', $html);
         $this->assertSame(3, substr_count($html, '0,00'));
     }
@@ -115,7 +150,14 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         $ids = [$this->idFromFixture(BankAccount::class, 'first')];
         foreach ([[2025, '12', 1001], [2026, '01', 1001], [2025, '01', 0], [2026, '12', 0], [2026, '02', 0]] as $case) {
             [$year, $month, $expected] = $case;
-            $this->assertSame($expected, $service->detailsFor($owner, $year, $month, $ids)->IncomeCents);
+            $details = $service->detailsFor($owner, $year, $month, $ids);
+            $this->assertSame($expected, $details->IncomeCents);
+            if ($expected > 0) {
+                $this->assertSame(
+                    [mb_substr(BudgetMonth::label('01'), 0, 3), mb_substr(BudgetMonth::label('12'), 0, 3)],
+                    $details->IncomeEntries->first()->Months->column('Label')
+                );
+            }
         }
     }
 
@@ -226,8 +268,7 @@ class MonthlyBudgetDetailsTest extends SapphireTest
             }
 
             if ($action !== 'summary') {
-                $expectedActive = $action === 'ranking' ? 2 : 1;
-                $this->assertSame($expectedActive, substr_count($html, 'aria-pressed="true"'), $action);
+                $this->assertSame(1, substr_count($html, 'selected="selected" data-account-id='), $action);
             }
         }
         $this->assertStringNotContainsString('Next year income', $this->render());
@@ -257,5 +298,17 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         $this->assertStringContainsString('Reserve', $html);
         $this->assertSame(3, substr_count($html, '<tfoot>'));
         $this->assertStringContainsString('59,96', $html);
+    }
+
+    /** Prefixes every booking type while preserving unsigned summary calculations. */
+    public function testBookingAmountPrefixes(): void
+    {
+        foreach (BudgetEntryType::values() as $type) {
+            $this->booking($type, '10.01', $type);
+        }
+        $html = $this->render();
+        $this->assertSame(1, substr_count($html, '>+10,01 '));
+        $this->assertSame(1, substr_count($html, '>+/-10,01 '));
+        $this->assertSame(4, substr_count($html, '>-10,01 '));
     }
 }

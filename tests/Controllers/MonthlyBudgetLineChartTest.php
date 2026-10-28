@@ -60,7 +60,7 @@ class MonthlyBudgetLineChartTest extends SapphireTest
         }
         $this->assertSame('#2093e5', $config['data']['datasets'][3]['borderColor']);
         $this->assertStringContainsString('household-budget-api/linechart', $html);
-        $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
+        $this->assertSame(1, substr_count($html, 'selected="selected" data-account-id='));
     }
 
     /** Rejects another member's account rather than exposing or silently including it. */

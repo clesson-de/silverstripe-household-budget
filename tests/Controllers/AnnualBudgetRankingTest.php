@@ -77,7 +77,8 @@ class AnnualBudgetRankingTest extends SapphireTest
         $this->assertSame(['Income <test> (1.203,00 €)'], $config['data']['labels']);
         $this->assertStringContainsString('Alle', $html);
         $this->assertSame(7, substr_count($html, 'household-budget-ranking__type'));
-        $this->assertSame(3, substr_count($html, 'aria-pressed="true"'));
+        $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
+        $this->assertSame(2, substr_count($html, 'selected="selected" data-account-id='));
         $this->assertStringContainsString('household-budget-api/ranking', $html);
         $this->booking(['Description' => 'Expense', 'Amount' => '300.00']);
         AnnualBudgetRankingPanel::config()->set('maximum_positions', 1);

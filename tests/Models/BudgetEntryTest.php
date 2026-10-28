@@ -188,19 +188,21 @@ class BudgetEntryTest extends SapphireTest
         $this->assertSame(0.0, $service->chartDataFor($owner, 2026, [])['datasets'][0]['data'][0]);
     }
 
-    /** Renders exactly the owner's two bank account toggles, initially active. */
-    public function testChartAccountButtons(): void
+    /** Renders only the owner's accounts in the initially selected multiselect. */
+    public function testChartAccountSelect(): void
     {
         Security::setCurrentUser($this->objFromFixture(Member::class, 'owner'));
         $controller = MonthlyBudgetController::create();
         $html = $controller->chart()->forTemplate();
-        $this->assertSame(2, substr_count($html, 'aria-pressed="true"'));
+        $this->assertSame(2, substr_count($html, 'selected="selected" data-account-id='));
+        $this->assertStringContainsString('<select multiple class="household-budget-account-select no-change-track"', $html);
         $this->assertStringContainsString('First bank', $html);
         $this->assertStringContainsString('Second bank', $html);
         $this->assertStringNotContainsString('Other bank', $html);
         $this->assertStringNotContainsString('Unassigned bank', $html);
         $summary = $controller->summary()->forTemplate();
-        $this->assertSame(2, substr_count($summary, 'aria-pressed="true"'));
+        $this->assertSame(2, substr_count($summary, 'selected="selected" data-account-id='));
+        $this->assertSame(2, substr_count($summary, 'data-chart-data='));
         $this->assertSame(12, substr_count($summary, 'data-budget-series="0"'));
         $this->assertStringNotContainsString('Other bank', $summary);
     }
