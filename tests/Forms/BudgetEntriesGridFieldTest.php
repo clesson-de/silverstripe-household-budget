@@ -16,6 +16,17 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
+use Clesson\Silverstripe\Forms\GridField\GridFieldToolbar;
+use Clesson\Silverstripe\Forms\GridField\GridFieldAddNewDropdown;
+use Clesson\Silverstripe\Forms\GridField\GridFieldSearch;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
+use SilverStripe\Forms\GridField\GridFieldButtonRow;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
+use SilverStripe\Control\Controller;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\FieldList;
+use DOMDocument;
+use DOMXPath;
 
 /**
  * Covers budget table column ordering and typed cell rendering.
@@ -26,6 +37,77 @@ use SilverStripe\Security\Security;
 class BudgetEntriesGridFieldTest extends SapphireTest
 {
     protected static $fixture_file = '../Models/BudgetEntryTest.yml';
+
+    /** Keeps native filters and creation inside one toolbar without duplicate buttons. */
+    public function testToolbarPlacement(): void
+    {
+        Security::setCurrentUser($this->objFromFixture(Member::class, 'owner'));
+        $config = GridFieldConfig_BudgetEntriesInHouseholdBudget::create();
+        $grid = GridField::create('Entries', '', BudgetEntry::get()->filter('ID', 0), $config);
+        $grid->setModelClass(BudgetEntry::class);
+        $form = Form::create(Controller::curr(), 'BudgetToolbarTest', FieldList::create($grid), FieldList::create());
+        $form->setFormAction('/test');
+        self::assertInstanceOf(GridFieldToolbar::class, $config->getComponentByType(GridFieldButtonRow::class));
+        self::assertCount(1, $config->getComponentsByType(GridFieldButtonRow::class));
+        self::assertNull($config->getComponentByType(GridFieldAddNewButton::class));
+        self::assertNull($config->getComponentByType(GridFieldFilterHeader::class));
+        self::assertSame(
+            ['Description', 'Contact.Name', 'Account.Name'],
+            $config->getComponentByType(GridFieldSearch::class)->getSearchFields()
+        );
+        self::assertSame([BudgetEntry::class => BudgetEntry::singleton()->i18n_singular_name()], $config->getComponentByType(GridFieldAddNewDropdown::class)->getClasses($grid));
+        $this->assertToolbarMarkup((string)$grid->FieldHolder());
+    }
+
+    /** Checks resolved fragment ownership rather than the presence of isolated controls. */
+    private function assertToolbarMarkup(string $html): void
+    {
+        $document = new DOMDocument();
+        $document->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new DOMXPath($document);
+        self::assertCount(7, $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--left")]//button'));
+        self::assertCount(1, $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--right")]//input[contains(@class, "gridfield-search__input")]'));
+        self::assertCount(1, $xpath->query(
+            '//*[contains(@class, "gridfield-pro-toolbar__group--right")]'
+            . '/*[not(contains(@class, "gridfield-pro-toolbar__item--grow"))]'
+            . '[.//input[contains(@class, "gridfield-search__input")]]'
+            . '/following-sibling::*[1]//a[contains(@class, "gridfield-add-new-dropdown__direct")]'
+        ));
+        self::assertCount(1, $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--right")]//a[contains(@class, "gridfield-add-new-dropdown__direct")]'));
+        self::assertStringNotContainsString('$DefineFragment', $html);
+    }
+
+    /** Searches each configured field while retaining owner scope and resetting native paging. */
+    public function testToolbarSearch(): void
+    {
+        $owner = $this->objFromFixture(Member::class, 'owner');
+        Security::setCurrentUser($owner);
+        $entry = BudgetEntry::create([
+            'Description' => 'Needle booking', 'Amount' => '10.00', 'Type' => 'fixed', 'Months' => '01',
+            'AccountID' => $this->idFromFixture(BankAccount::class, 'first'),
+            'ContactID' => $this->idFromFixture(Person::class, 'other'),
+        ]);
+        $entry->write();
+        $list = BudgetEntry::get()->filter('OwnerID', $owner->ID);
+        $config = GridFieldConfig_BudgetEntriesInHouseholdBudget::create();
+        $grid = GridField::create('Entries', '', $list, $config);
+        $search = $config->getComponentByType(GridFieldSearch::class);
+        foreach (['needle', 'Other', 'First bank', 'missing', ''] as $term) {
+            $grid->State->GridFieldPaginator->currentPage = 4;
+            $search->handleAction($grid, GridFieldSearch::ACTION, [], ['Entries' => ['SearchQuery' => $term]]);
+            self::assertSame(
+                $term === 'missing' ? [] : [$entry->ID],
+                $search->getManipulatedData($grid, $list)->column('ID')
+            );
+            self::assertSame(1, $grid->State->GridFieldPaginator->currentPage);
+        }
+        $search->handleAction($grid, GridFieldSearch::ACTION, [], ['Entries' => ['SearchQuery' => 'needle']]);
+        self::assertSame([], $search->getManipulatedData($grid, $list->filter('Type', 'income'))->column('ID'));
+        self::assertSame([], $search->getManipulatedData(
+            $grid,
+            BudgetEntry::get()->filter('OwnerID', $this->idFromFixture(Member::class, 'other'))
+        )->column('ID'));
+    }
 
     /** Ensures the untitled bar precedes description, amount and recurring months. */
     public function testColumns(): void

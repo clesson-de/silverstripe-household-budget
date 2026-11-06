@@ -20,6 +20,7 @@
         "silverstripe/framework": "^6",
         "silverstripe/admin": "^3",
         "clesson-de/silverstripe-contacts": "^1",
+        "clesson-de/silverstripe-gridfield-pro": "^2",
         "clesson-de/silverstripe-payment-accounts": "^1",
         "clesson-de/silverstripe-dashboard": "^1",
         "clesson-de/silverstripe-graphing": "^1",

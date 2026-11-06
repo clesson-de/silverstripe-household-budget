@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace Clesson\Silverstripe\HouseholdBudget\Forms;
 
+use Clesson\Silverstripe\Constants\GridFieldToolbarLayout;
+use Clesson\Silverstripe\Forms\GridField\GridFieldSearch;
 use Clesson\Silverstripe\HouseholdBudget\Constants\BudgetEntryField;
 use Clesson\Silverstripe\HouseholdBudget\Constants\BudgetEntryType;
 use Clesson\Silverstripe\HouseholdBudget\Constants\BudgetMonth;
 use Clesson\Silverstripe\HouseholdBudget\Models\BudgetEntry;
 use Clesson\Silverstripe\HouseholdBudget\Forms\GridField\GridFieldFilter_BudgetEntryType;
 use Clesson\Silverstripe\HouseholdBudget\Forms\GridField\BudgetAmountBar;
+use Clesson\Silverstripe\Forms\GridField\GridFieldToolbar;
+use Clesson\Silverstripe\Forms\GridField\GridFieldAddNewDropdown;
 use SilverStripe\Core\Convert;
 use SilverStripe\Forms\GridField\GridFieldConfig;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldDataColumns;
 use SilverStripe\Forms\GridField\GridFieldPaginator;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\ORM\FieldType\DBField;
 
 /**
@@ -37,10 +43,37 @@ class GridFieldConfig_BudgetEntriesInHouseholdBudget extends GridFieldConfig
         parent::__construct();
         $this->amountBar = new BudgetAmountBar();
         $this->addComponents(GridFieldConfig_RecordEditor::create()->getComponents()->toArray());
-        $this->addComponent(GridFieldFilter_BudgetEntryType::create(), GridFieldPaginator::class);
+        $this->addToolbar();
         $columns = $this->getComponentByType(GridFieldDataColumns::class);
         $columns->setDisplayFields($this->displayFields());
         $this->extend('updateConfig');
+    }
+
+    /** Groups category filters and creation without replacing the standard editing handlers. */
+    private function addToolbar(): void
+    {
+        $toolbar = GridFieldToolbar::install($this);
+        $this->addSearch($toolbar);
+        $types = $toolbar->addItem('booking-types');
+        $this->addComponent(GridFieldFilter_BudgetEntryType::create($types->getFragment()), GridFieldPaginator::class);
+        $this->removeComponentsByType(GridFieldAddNewButton::class);
+        $this->addComponent(
+            GridFieldAddNewDropdown::create(
+                $toolbar->addItem('new', GridFieldToolbarLayout::RIGHT)->getFragment()
+            )->setClasses([BudgetEntry::class])
+        );
+    }
+
+    /** Replaces native column filtering with the shared scoped free-text search. */
+    private function addSearch(GridFieldToolbar $toolbar): void
+    {
+        $this->removeComponentsByType(GridFieldFilterHeader::class);
+        $slot = $toolbar->addItem('search', GridFieldToolbarLayout::RIGHT, GridFieldToolbarLayout::CONTENT);
+        $this->addComponent(GridFieldSearch::create([
+            BudgetEntryField::DESCRIPTION => BudgetEntryField::label(BudgetEntryField::DESCRIPTION),
+            BudgetEntryField::CONTACT . '.Name' => BudgetEntryField::label(BudgetEntryField::CONTACT),
+            BudgetEntryField::ACCOUNT . '.Name' => BudgetEntryField::label(BudgetEntryField::ACCOUNT),
+        ], $slot->getFragment()), GridFieldPaginator::class);
     }
 
     /**

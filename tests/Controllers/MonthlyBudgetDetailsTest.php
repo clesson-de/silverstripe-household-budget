@@ -124,6 +124,15 @@ class MonthlyBudgetDetailsTest extends SapphireTest
         $this->assertStringContainsString('value="' . date('Y') . '" selected="selected"', $html);
         $this->assertStringContainsString('household-budget-details__year no-change-track form-select', $html);
         $this->assertStringContainsString('household-budget-details__month no-change-track form-select', $html);
+        $document = new DOMDocument();
+        $document->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xpath = new DOMXPath($document);
+        $this->assertCount(2, $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--left")]//select'));
+        $this->assertCount(1, $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--right")]//select[@multiple]'));
+        $accountSelect = $xpath->query('//*[contains(@class, "gridfield-pro-toolbar__group--right")]//select[@multiple]')->item(0);
+        $this->assertSame($accountSelect->getAttribute('aria-label'), $accountSelect->getAttribute('data-placeholder'));
+        $this->assertNotSame('', $accountSelect->getAttribute('data-placeholder'));
+        $this->assertSame('', trim($xpath->evaluate('string(../text())', $accountSelect)));
     }
 
     /** Keeps empty sections visible with a green zero balance. */

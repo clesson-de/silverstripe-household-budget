@@ -32,6 +32,11 @@ class GridFieldFilter_BudgetEntryType implements GridField_HTMLProvider, GridFie
     /** Native AJAX action shared by the category filter buttons. */
     private const ACTION = 'filterbudgetentrytype';
 
+    /** Keeps standalone placement available while allowing a named toolbar slot. */
+    public function __construct(private string $fragment = 'before')
+    {
+    }
+
     /** Returns the supported GridField action. */
     public function getActions($gridField): array
     {
@@ -62,7 +67,7 @@ class GridFieldFilter_BudgetEntryType implements GridField_HTMLProvider, GridFie
             $buttons .= $this->button($gridField, $type, $label)->forTemplate();
         }
         $label = Convert::raw2att(BudgetEntryField::label(BudgetEntryField::TYPE));
-        return ['before' => '<div class="household-budget-entry-type-filter btn-group" role="group" aria-label="'
+        return [$this->fragment => '<div class="household-budget-entry-type-filter type-filter btn-group" role="group" aria-label="'
             . $label . '">' . $buttons . '</div>'];
     }
 
@@ -79,6 +84,9 @@ class GridFieldFilter_BudgetEntryType implements GridField_HTMLProvider, GridFie
             [BudgetEntryField::TYPE => $type]
         );
         $button->addExtraClass('no-change-track btn ' . ($selected ? 'btn-primary' : 'btn-outline-primary'));
+        if ($selected) {
+            $button->addExtraClass('active');
+        }
         $button->setAttribute('aria-pressed', $selected ? 'true' : 'false');
         return $button;
     }

@@ -26,6 +26,17 @@ historical versions.
 | Administration → Budget entries | Create and edit bookings; filter categories; compare amounts; inspect recurring months and compact date-bound badges. |
 | Administration → Settings | Personal forecast email opt-in, separate account/overall choices and read-only delivery status. |
 
+The budget-entry list uses the shared responsive GridField toolbar, with compact
+joined booking-type filters on the left and a neutral **New** button on the right.
+The shared free-text search replaces native column filtering and matches
+description, counterparty name and bank account name within the current owner's
+list and selected booking types. Enter applies the search; X clears and submits
+it immediately, with full-page navigation instead of AJAX. Searching resets paging.
+Existing owner-scoped filtering, pagination and table columns remain unchanged.
+Monthly details reuse the same toolbar layout for the joined year/month selectors
+and searchable account selection. This read-only view retains its existing AJAX
+reload behaviour rather than introducing a GridField or editing actions.
+
 Year selectors include the current and **next year**, plus five previous years
 by default. Month selectors default to the current month. Searchable account
 multiselects in monthly details and dashboard panels display selected accounts
@@ -59,6 +70,7 @@ Direct runtime dependencies, as declared in `composer.json`:
 | `silverstripe/framework` | `^6` | ORM, forms, controllers, permissions, tasks and email. |
 | `silverstripe/admin` | `^3` | Dedicated `SingleRecordAdmin` CMS section. |
 | `clesson-de/silverstripe-contacts` | `^1` | Member-linked contacts and optional booking counterparties. |
+| `clesson-de/silverstripe-gridfield-pro` | `^2` | Responsive entry toolbar and compact creation action. |
 | `clesson-de/silverstripe-payment-accounts` | `^1` | Own `BankAccount` records and account summaries/aliases. |
 | `clesson-de/silverstripe-dashboard` | `^1` | Personal dashboard and panel layout. |
 | `clesson-de/silverstripe-graphing` | `^1` | Chart.js-backed bar and line charts in the CMS. |

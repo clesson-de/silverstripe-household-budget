@@ -61,13 +61,13 @@ class BudgetEntryTypeFilterTest extends SapphireTest
         SSViewer::set_themes(['silverstripe/admin:cms-forms', '$default']);
         $grid = $this->grid();
         $filter = $grid->getConfig()->getComponentByType(GridFieldFilter_BudgetEntryType::class);
-        $html = $filter->getHTMLFragments($grid)['before'];
+        $html = $filter->getHTMLFragments($grid)['toolbar-before-booking-types'];
         $this->assertSame(7, substr_count($html, '<button'));
         $this->assertSame(1, substr_count($html, 'aria-pressed="true"'));
         $this->assertSame(7, substr_count($html, 'no-change-track'));
         $this->assertStringContainsString('action_gridFieldAlterAction', $html);
         $filter->handleAction($grid, $filter->getActions($grid)[0], ['Type' => 'fixed'], []);
-        $this->assertSame(1, substr_count($filter->getHTMLFragments($grid)['before'], 'aria-pressed="true"'));
+        $this->assertSame(1, substr_count($filter->getHTMLFragments($grid)['toolbar-before-booking-types'], 'aria-pressed="true"'));
     }
 
     /** Rejects unsupported filter values explicitly. */

@@ -5,9 +5,7 @@
     data-invalid-range-error="$InvalidRangeError.XML"
     data-download-error="$DownloadError.XML"
     data-processing-label="$Processing.XML"
-    aria-labelledby="household-budget-report-title">
-    <h2 id="household-budget-report-title">$Title.XML</h2>
-    <p>$Description.XML</p>
+    aria-label="$Title.XML">
     <% if $HasAccounts %>
         <div class="household-budget-report__dates">
             <label>
